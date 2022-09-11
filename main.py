@@ -4,7 +4,7 @@ pygame.init()
 
 clock = pygame.time.Clock()
 
-background = pygame.image.load("background.png")
+background = pygame.image.load("./sprites/background.png")
 
 RED = (255,0,0)
 GREEN = (0,255,0)
