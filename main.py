@@ -4,6 +4,8 @@ pygame.init()
 
 clock = pygame.time.Clock()
 
+background = pygame.image.load("background.png")
+
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
@@ -25,13 +27,13 @@ Boat = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 gameon = True
 while gameon:
 
-    clock.tick(120)
-    win.fill(BLACK)
+    clock.tick(60)
 
     for events in pygame.event.get():
         if events.type == pygame.QUIT:
             gameon = False
-
+    win.blit(background, (0,0))
+    
     collision = Drogo.collision()
     Drogo.movement(collision)
     Drogo.draw()
@@ -41,7 +43,7 @@ while gameon:
     Boat.movement(Drogo.x)
     Boat.draw()
 
-
+    
     pygame.display.update()
 
 pygame.quit()
