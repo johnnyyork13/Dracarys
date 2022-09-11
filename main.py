@@ -23,14 +23,15 @@ Drogo = player.Player(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 #TEMPORARY FOR DEBUGGING
 Boat = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-def attack_collision(firex, firey, boatx, boaty):
+def attack_collision(firex, firey, boatx, boaty, on_fire):
     fire = pygame.Rect(firex, firey, 50, 50)
     boat = pygame.Rect(boatx, boaty, 50, 50)
     if fire.colliderect(boat):
-        return True
+        on_fire = True
+        return on_fire
     
 
-
+on_fire = False
 gameon = True
 while gameon:
 
@@ -44,13 +45,13 @@ while gameon:
     collision = Drogo.collision()
     Drogo.movement(collision)
     Drogo.draw()      
-    Drogo.attack()
+    Boat.on_fire = Drogo.attack([Boat.x, Boat.y, Boat.width, Boat.height])
 
     #TEMPORARY FOR DEBUGGING
     Boat.movement(Drogo.x)
     Boat.draw()
     Boat.attack()
-    Boat.on_fire = attack_collision(Drogo.fire_x, Drogo.fire_y, Boat.x, Boat.y)
+    #Boat.on_fire = attack_collision(Drogo.fire_x, Drogo.fire_y, Boat.x, Boat.y, on_fire)
     
 
     

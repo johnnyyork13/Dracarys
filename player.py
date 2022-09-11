@@ -75,15 +75,14 @@ class Player:
 
         return [x_collide, y_collide]
 
-    def attack(self):
+    def attack(self, boat):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
-            self.fire_x = self.x + self.width
-            self.fire_y = self.y + 30
-            self.win.blit(self.fire_list[self.fire_count//3], (self.fire_x, self.fire_y))
-            self.fire_count += 1
-            if self.fire_count >= 6:
-                self.fire_count = 0
+            fire_rect = pygame.Rect(self.fire_x, self.fire_y, self.width, self.height)
+            boat_rect = pygame.Rect(boat[0], boat[1], boat[2], boat[3])
+            if fire_rect.colliderect(boat_rect):
+                on_fire = True
+                return on_fire
 
 
     def draw(self):
@@ -95,6 +94,14 @@ class Player:
                 self.dragon_image_count = 0
         else:
             self.win.blit(self.dragon_image_list[0], (self.x, self.y))
+
+        if keys[pygame.K_SPACE]:
+            self.fire_x = self.x + self.width
+            self.fire_y = self.y + 30
+            self.win.blit(self.fire_list[self.fire_count//3], (self.fire_x, self.fire_y))
+            self.fire_count += 1
+            if self.fire_count >= 6:
+                self.fire_count = 0
         #pygame.draw.rect(self.win, BLUE, (self.x, self.y, self.width, self.height))
 
 
@@ -115,37 +122,87 @@ class Boat:
         self.boat_fire_two = pygame.image.load("./sprites/boat_fire_two.png")
         self.boat_fire_three = pygame.image.load("./sprites/boat_fire_three.png")
         self.boat_fire_list = [self.boat_fire_one, self.boat_fire_two, self.boat_fire_three]
-        self.fire_count = 0
+        self.boat_sink_one = pygame.image.load("./sprites/boat_sink_one.png")
+        self.boat_sink_two = pygame.image.load("./sprites/boat_sink_two.png")
+        self.boat_sink_list = [self.boat_sink_one, self.boat_sink_two]
+        self.boat_fire_count = 0
+        self.fire_cycle_count = 0
+        self.boat_sink_count = 0
         self.on_fire = False
+        self.undamaged = True
         self.burning = False
+        self.sinking = False
+        self.respawn = False
         #arrow one
         self.arrow_x = self.x
         self.arrow_y = self.y
 
     def movement(self, playerx):
-        if self.x > playerx + self.width*2:
-            self.x -= self.vel
-        elif self.x < playerx + self.width*2:
-            self.x += self.vel
+        if self.undamaged:
+            if self.x > playerx + self.width*2:
+                self.x -= self.vel
+            elif self.x < playerx + self.width*2:
+                self.x += self.vel
 
     def attack(self):
-        if self.arrow_x > 0 and self.arrow_y > 0:
-            self.arrow_x -= self.vel*2
-            self.arrow_y -= self.vel*2
-        else:
-            self.arrow_x = self.x
-            self.arrow_y = self.y
-    
-        self.win.blit(self.arrow_image, (self.arrow_x, self.arrow_y))
+        if not self.sinking:
+            if self.arrow_x > 0 and self.arrow_y > 0:
+                self.arrow_x -= self.vel*2
+                self.arrow_y -= self.vel*2
+            else:
+                self.arrow_x = self.x
+                self.arrow_y = self.y
+        
+            self.win.blit(self.arrow_image, (self.arrow_x, self.arrow_y))
         
 
     def draw(self):
-        if self.on_fire:
+        def undamaged(img):
+            self.win.blit(img, (self.x, self.y))
+
+        def burning(img_list, boat_img):
+            print('burning', self.burning)
+            self.undamaged = False
+            self.win.blit(boat_img, (self.x, self.y))
+            self.win.blit(img_list[self.boat_fire_count // 10], (self.x, self.y))
+            self.boat_fire_count += 1
+            if self.boat_fire_count >= 30:
+                self.boat_fire_count = 0
+                self.fire_cycle_count += 1
+            elif self.fire_cycle_count > 3:
+                print('cycle count')
+                self.burning = False
+                self.sinking = True
+                return
+            
+        def sinking(img_list):
+            print('sinking', self.boat_sink_count)
+            self.win.blit(img_list[self.boat_sink_count // 18], (self.x, self.y))
+            self.boat_sink_count += 1
+            if self.boat_sink_count >= 36:
+                self.sinking = False
+                self.respawn = True
+
+        def respawn():
+            self.x = 1200
+            self.undamaged = True
+            self.burning = False
+            self.sinking = False
+            self.respawn = False
+            self.boat_fire_count = 0
+            self.fire_cycle_count = 0
+            self.boat_sink_count = 0
+
+
+
+            
+        if self.undamaged:
+            undamaged(self.boat_image)
+        if self.on_fire and self.undamaged:
             self.burning = True
         if self.burning:
-            self.win.blit(self.boat_fire_list[self.fire_count // 12], (self.x, self.y))
-            self.fire_count += 1
-            if self.fire_count >= 36:
-                self.fire_count = 0
-
-        self.win.blit(self.boat_image, (self.x, self.y))
+            burning(self.boat_fire_list, self.boat_image)
+        if self.sinking:
+            sinking(self.boat_sink_list)
+        if self.respawn:
+            respawn()
