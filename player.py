@@ -1,4 +1,5 @@
 import pygame
+import random
 
 RED = (255,0,0)
 GREEN = (0,255,0)
@@ -77,7 +78,7 @@ class Player:
             x_collide = True
         else:
             x_collide = False
-        if self.y + self.deltay < 0 or self.y + self.deltay + self.height > self.SCREEN_HEIGHT:
+        if self.y + self.deltay < 0 or self.y + self.deltay + self.height > self.SCREEN_HEIGHT - 50:
             y_collide = True
         else:
             y_collide = False
@@ -126,7 +127,7 @@ class Boat:
         self.win = win
         self.SCREEN_WIDTH = SCREEN_WIDTH
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
-        self.x = SCREEN_WIDTH + 50
+        self.x = SCREEN_WIDTH + random.randint(50, 1000)
         self.y = SCREEN_HEIGHT - 80
         self.width = 50
         self.height = 50
@@ -134,6 +135,8 @@ class Boat:
         self.boat_image = pygame.image.load("./sprites/boat.png")
         self.arrow_image = pygame.image.load('./sprites/arrow.png')
         self.arrow_rect = ''
+        self.arrow_spawned = False
+        self.m_x, self.m_y = [0,0]
         self.boat_fire_one = pygame.image.load("./sprites/boat_fire_one.png")
         self.boat_fire_two = pygame.image.load("./sprites/boat_fire_two.png")
         self.boat_fire_three = pygame.image.load("./sprites/boat_fire_three.png")
@@ -153,26 +156,49 @@ class Boat:
         self.arrow_x = self.x
         self.arrow_y = self.y
 
-    def movement(self, playerx):
-        if self.undamaged:
-            if self.x > playerx + self.width*2:
-                self.x -= self.vel
-            elif self.x < playerx + self.width*2:
-                self.x += self.vel
+        #collision variables
+        self.collide_with_other_boats = False
+        self.deltax = 0
 
-    def attack(self):
+
+    def movement(self, playerx, boat_rect_list):
+        self.deltax = 0
+
+        if self.undamaged:
+            if self.x > playerx + self.width*(random.randint(2, 4)):
+                self.deltax -= self.vel
+            elif self.x < playerx + self.width*2:
+                self.deltax += self.vel
+
+        boat = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        for boats in boat_rect_list:
+            boat_rect = pygame.Rect(boats.x, boats.y, boats.width, boats.height)
+            if boat.colliderect(boat_rect):
+                pass
+                
+        print(self.deltax)                
+
+        self.x += self.deltax
+
+    def attack(self, playerx, playery):
+        if not self.arrow_spawned:
+            self.m_y = (self.y - playery)
+            self.m_x = (self.x - playerx)
+            self.arrow_spawned = True
         if self.undamaged:
             if self.arrow_x > 0 and self.arrow_y > 0:
-                self.arrow_x -= self.vel*3
-                self.arrow_y -= self.vel*3
+                self.arrow_x -= self.m_x * random.randint(1,3) * 0.01
+                self.arrow_y -= self.m_y * random.randint(1,3) * 0.01
             else:
                 self.arrow_x = self.x
                 self.arrow_y = self.y
+                self.arrow_spawned = False
         
             self.arrow_rect = pygame.Rect(self.arrow_x, self.arrow_y, 25, 25)
             self.win.blit(self.arrow_image, (self.arrow_x, self.arrow_y))
         else:
-            self.arrow_x = 1500
+            self.arrow_x = self.SCREEN_WIDTH + 100
         
 
     def draw(self):
@@ -200,7 +226,7 @@ class Boat:
                 self.respawn = True
 
         def respawn():
-            self.x = 1200
+            self.x = random.randint(1050, 1500)
             self.undamaged = True
             self.burning = False
             self.sinking = False

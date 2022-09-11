@@ -22,13 +22,29 @@ Drogo = player.Player(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 
 #TEMPORARY FOR DEBUGGING
 Boat = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
+Boat_Two = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+boat_list = [Boat, Boat_Two]
+def make_boats():
+    for i in range(1, 1):
+        boat = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
+        boat_list.append(boat)
 
 def player_hit(player_rect, arrow_rect):
     if arrow_rect.colliderect(player_rect):
         return -5
     else:
         return 0
-    
+
+def spawn_boats(boat_list, Drogo):
+    for boat in boat_list:
+        boat.on_fire = Drogo.attack([boat.x, boat.y, boat.width, boat.height])
+        boat.movement(Drogo.x, boat_list)
+        boat.draw()
+        boat.attack(Drogo.x, Drogo.y)
+        Drogo.hp_remaining += player_hit(Drogo.player_rect, boat.arrow_rect)
+
+make_boats()
 
 on_fire = False
 gameon = True
@@ -43,15 +59,10 @@ while gameon:
 
     collision = Drogo.collision()
     Drogo.movement(collision)
-    Drogo.draw()      
-    Boat.on_fire = Drogo.attack([Boat.x, Boat.y, Boat.width, Boat.height])
+    Drogo.draw()  
 
-    #TEMPORARY FOR DEBUGGING
-    Boat.movement(Drogo.x)
-    Boat.draw()
-    Boat.attack()
-    
-    Drogo.hp_remaining += player_hit(Drogo.player_rect, Boat.arrow_rect)
+    spawn_boats(boat_list, Drogo)
+    #spawn_boats(Boat_Two, Drogo)
 
 
     
