@@ -3,6 +3,8 @@ import pygame
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
+BLACK = (0,0,0)
+WHITE = (255,255,255)
 
 
 
@@ -32,6 +34,12 @@ class Player:
         self.fire_count = 0
         self.fire_x = self.x + self.width
         self.fire_y = self.y + 30
+        self.player_rect = ''
+
+        #HP BAR
+        self.hp_remaining = 500
+        self.hp_border = (20, 20, 502, 32)
+        
         
 
     def movement(self, collision):
@@ -59,6 +67,7 @@ class Player:
         if not collision[1]:
             self.y += self.deltay
 
+        self.player_rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def collision(self):
         x_collide = False
@@ -86,6 +95,8 @@ class Player:
 
 
     def draw(self):
+
+        #WING FLAPPING ANIMATION
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_s]:
             self.win.blit(self.dragon_image_list[self.dragon_image_count // 8], (self.x, self.y))
@@ -95,6 +106,7 @@ class Player:
         else:
             self.win.blit(self.dragon_image_list[0], (self.x, self.y))
 
+        #FIRE BREATHING ANIMATION
         if keys[pygame.K_SPACE]:
             self.fire_x = self.x + self.width
             self.fire_y = self.y + 30
@@ -102,7 +114,10 @@ class Player:
             self.fire_count += 1
             if self.fire_count >= 6:
                 self.fire_count = 0
-        #pygame.draw.rect(self.win, BLUE, (self.x, self.y, self.width, self.height))
+
+        #HEALTH BAR
+        pygame.draw.rect(self.win, BLACK, self.hp_border)
+        pygame.draw.rect(self.win, RED, (21,21, self.hp_remaining, 30) )
 
 
 class Boat:
@@ -118,6 +133,7 @@ class Boat:
         self.vel = 2
         self.boat_image = pygame.image.load("./sprites/boat.png")
         self.arrow_image = pygame.image.load('./sprites/arrow.png')
+        self.arrow_rect = ''
         self.boat_fire_one = pygame.image.load("./sprites/boat_fire_one.png")
         self.boat_fire_two = pygame.image.load("./sprites/boat_fire_two.png")
         self.boat_fire_three = pygame.image.load("./sprites/boat_fire_three.png")
@@ -145,15 +161,18 @@ class Boat:
                 self.x += self.vel
 
     def attack(self):
-        if not self.sinking:
+        if self.undamaged:
             if self.arrow_x > 0 and self.arrow_y > 0:
-                self.arrow_x -= self.vel*2
-                self.arrow_y -= self.vel*2
+                self.arrow_x -= self.vel*3
+                self.arrow_y -= self.vel*3
             else:
                 self.arrow_x = self.x
                 self.arrow_y = self.y
         
+            self.arrow_rect = pygame.Rect(self.arrow_x, self.arrow_y, 25, 25)
             self.win.blit(self.arrow_image, (self.arrow_x, self.arrow_y))
+        else:
+            self.arrow_x = 1500
         
 
     def draw(self):
@@ -161,7 +180,6 @@ class Boat:
             self.win.blit(img, (self.x, self.y))
 
         def burning(img_list, boat_img):
-            print('burning', self.burning)
             self.undamaged = False
             self.win.blit(boat_img, (self.x, self.y))
             self.win.blit(img_list[self.boat_fire_count // 10], (self.x, self.y))
@@ -170,13 +188,11 @@ class Boat:
                 self.boat_fire_count = 0
                 self.fire_cycle_count += 1
             elif self.fire_cycle_count > 3:
-                print('cycle count')
                 self.burning = False
                 self.sinking = True
                 return
             
         def sinking(img_list):
-            print('sinking', self.boat_sink_count)
             self.win.blit(img_list[self.boat_sink_count // 18], (self.x, self.y))
             self.boat_sink_count += 1
             if self.boat_sink_count >= 36:
@@ -193,9 +209,6 @@ class Boat:
             self.fire_cycle_count = 0
             self.boat_sink_count = 0
 
-
-
-            
         if self.undamaged:
             undamaged(self.boat_image)
         if self.on_fire and self.undamaged:
