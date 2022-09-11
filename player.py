@@ -16,7 +16,7 @@ class Player:
         self.y = SCREEN_HEIGHT/2
         self.width = 50
         self.height = 50
-        self.vel = 5
+        self.vel = 6
         self.x_collide = False
         self.y_collide = False
         self.deltax = 0
@@ -27,6 +27,11 @@ class Player:
         self.dragon_image_list = [self.dragon_one, self.dragon_two]
         self.dragon_image_count = 0
         self.fire_one = pygame.image.load("fire_one.png")
+        self.fire_two = pygame.image.load("fire_two.png")
+        self.fire_list = [self.fire_one, self.fire_two]
+        self.fire_count = 0
+        self.fire_x = self.x + self.width
+        self.fire_y = self.y + 30
         
 
     def movement(self, collision):
@@ -34,6 +39,9 @@ class Player:
 
         self.deltax = 0
         self.deltay = 0
+
+        #GRAVITY
+        self.deltay += 2
 
         if keys[pygame.K_d]:
             self.deltax += self.vel
@@ -50,6 +58,7 @@ class Player:
         #Check for Y AXIS collision
         if not collision[1]:
             self.y += self.deltay
+
 
     def collision(self):
         x_collide = False
@@ -69,20 +78,23 @@ class Player:
     def attack(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
-            self.win.blit(self.fire_one, (self.x+self.width, self.y+30))
+            self.fire_x = self.x + self.width
+            self.fire_y = self.y + 30
+            self.win.blit(self.fire_list[self.fire_count//3], (self.fire_x, self.fire_y))
+            self.fire_count += 1
+            if self.fire_count >= 6:
+                self.fire_count = 0
 
 
     def draw(self):
-    
-        if self.dragon_image_count <= 10:
-            self.win.blit(self.dragon_image_list[0], (self.x, self.y) )
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_s]:
+            self.win.blit(self.dragon_image_list[self.dragon_image_count // 8], (self.x, self.y))
             self.dragon_image_count += 1
-        elif self.dragon_image_count <= 20:
-            self.win.blit(self.dragon_image_list[1], (self.x, self.y) )
-            self.dragon_image_count += 1
+            if self.dragon_image_count >= 16:
+                self.dragon_image_count = 0
         else:
-            self.win.blit(self.dragon_image_list[1], (self.x, self.y) )
-            self.dragon_image_count = 0
+            self.win.blit(self.dragon_image_list[0], (self.x, self.y))
         #pygame.draw.rect(self.win, BLUE, (self.x, self.y, self.width, self.height))
 
 
@@ -99,12 +111,19 @@ class Boat:
         self.vel = 2
         self.boat_image = pygame.image.load("boat.png")
         self.arrow_image = pygame.image.load('arrow.png')
+        self.boat_fire_one = pygame.image.load("boat_fire_one.png")
+        self.boat_fire_two = pygame.image.load("boat_fire_two.png")
+        self.boat_fire_three = pygame.image.load("boat_fire_three.png")
+        self.boat_fire_list = [self.boat_fire_one, self.boat_fire_two, self.boat_fire_three]
+        self.fire_count = 0
+        self.on_fire = False
+        self.burning = False
         #arrow one
         self.arrow_x = self.x
         self.arrow_y = self.y
 
     def movement(self, playerx):
-        if self.x >= playerx + self.width*2:
+        if self.x > playerx + self.width*2:
             self.x -= self.vel
         elif self.x < playerx + self.width*2:
             self.x += self.vel
@@ -116,9 +135,17 @@ class Boat:
         else:
             self.arrow_x = self.x
             self.arrow_y = self.y
-            
+    
         self.win.blit(self.arrow_image, (self.arrow_x, self.arrow_y))
         
 
     def draw(self):
+        if self.on_fire:
+            self.burning = True
+        if self.burning:
+            self.win.blit(self.boat_fire_list[self.fire_count // 12], (self.x, self.y))
+            self.fire_count += 1
+            if self.fire_count >= 36:
+                self.fire_count = 0
+
         self.win.blit(self.boat_image, (self.x, self.y))
