@@ -127,7 +127,7 @@ class Boat:
         self.win = win
         self.SCREEN_WIDTH = SCREEN_WIDTH
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
-        self.x = SCREEN_WIDTH + random.randint(50, 1000)
+        self.x = 1050
         self.y = SCREEN_HEIGHT - 80
         self.width = 50
         self.height = 50
@@ -160,8 +160,8 @@ class Boat:
         self.collide_with_other_boats = False
         self.deltax = 0
 
-
-    def movement(self, playerx, boat_rect_list):
+    #MOVEMENT AND COLLISION
+    def movement(self, playerx, boat_list):
         self.deltax = 0
 
         if self.undamaged:
@@ -170,14 +170,13 @@ class Boat:
             elif self.x < playerx + self.width*2:
                 self.deltax += self.vel
 
-        boat = pygame.Rect(self.x, self.y, self.width, self.height)
+        boat = pygame.Rect(self.x + self.deltax, self.y, self.width, self.height)
 
-        for boats in boat_rect_list:
-            boat_rect = pygame.Rect(boats.x, boats.y, boats.width, boats.height)
-            if boat.colliderect(boat_rect):
-                pass
-                
-        print(self.deltax)                
+        for boats in boat_list:
+            boat_rect = pygame.Rect(boats.x + boats.deltax, boats.y, boats.width, boats.height)
+            if boat != boat_rect and boat.colliderect(boat_rect):
+                print(self.x, boats.x)
+                self.deltax = 0               
 
         self.x += self.deltax
 
@@ -201,7 +200,7 @@ class Boat:
             self.arrow_x = self.SCREEN_WIDTH + 100
         
 
-    def draw(self):
+    def draw(self, boat_list):
         def undamaged(img):
             self.win.blit(img, (self.x, self.y))
 
@@ -225,8 +224,23 @@ class Boat:
                 self.sinking = False
                 self.respawn = True
 
-        def respawn():
-            self.x = random.randint(1050, 1500)
+        def respawn(boat_list):
+            collide = False
+            x_list = []
+            for boats in boat_list:
+                if self.x not in range(self.x, boats.x):
+                    x_list.append(boats.x)
+                else:
+                    x_list.append(boats.x)
+                    collide = True
+            if collide:
+                sorted_x_list = set(x_list)
+                list_set = list(sorted_x_list)
+                self.x = list_set[-1] + 1000
+            else:
+                self.x = self.x + 1000
+            
+
             self.undamaged = True
             self.burning = False
             self.sinking = False
@@ -244,4 +258,4 @@ class Boat:
         if self.sinking:
             sinking(self.boat_sink_list)
         if self.respawn:
-            respawn()
+            respawn(boat_list)

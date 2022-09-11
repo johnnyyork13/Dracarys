@@ -24,11 +24,14 @@ Drogo = player.Player(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 Boat = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 Boat_Two = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-boat_list = [Boat, Boat_Two]
+boat_list = []
 def make_boats():
-    for i in range(1, 1):
+    for i in range(1, 5):
         boat = player.Boat(win, SCREEN_WIDTH, SCREEN_HEIGHT)
         boat_list.append(boat)
+    
+    for boat_id, boat in enumerate(boat_list):
+        boat.x = SCREEN_WIDTH + (boat_id * 100)
 
 def player_hit(player_rect, arrow_rect):
     if arrow_rect.colliderect(player_rect):
@@ -40,11 +43,12 @@ def spawn_boats(boat_list, Drogo):
     for boat in boat_list:
         boat.on_fire = Drogo.attack([boat.x, boat.y, boat.width, boat.height])
         boat.movement(Drogo.x, boat_list)
-        boat.draw()
+        boat.draw(boat_list)
         boat.attack(Drogo.x, Drogo.y)
         Drogo.hp_remaining += player_hit(Drogo.player_rect, boat.arrow_rect)
 
 make_boats()
+
 
 on_fire = False
 gameon = True
@@ -56,7 +60,6 @@ while gameon:
         if events.type == pygame.QUIT:
             gameon = False
     win.blit(background, (0,0))
-
     collision = Drogo.collision()
     Drogo.movement(collision)
     Drogo.draw()  
