@@ -42,6 +42,7 @@ while gameon:
     #TEMPORARY FOR DEBUGGING
     Boat.movement(Drogo.x)
     Boat.draw()
+    Boat.attack()
 
     
     pygame.display.update()

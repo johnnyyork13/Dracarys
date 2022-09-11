@@ -81,6 +81,7 @@ class Player:
             self.win.blit(self.dragon_image_list[1], (self.x, self.y) )
             self.dragon_image_count += 1
         else:
+            self.win.blit(self.dragon_image_list[1], (self.x, self.y) )
             self.dragon_image_count = 0
         #pygame.draw.rect(self.win, BLUE, (self.x, self.y, self.width, self.height))
 
@@ -92,10 +93,15 @@ class Boat:
         self.SCREEN_WIDTH = SCREEN_WIDTH
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
         self.x = SCREEN_WIDTH + 50
-        self.y = SCREEN_HEIGHT - 50
+        self.y = SCREEN_HEIGHT - 80
         self.width = 50
         self.height = 50
         self.vel = 2
+        self.boat_image = pygame.image.load("boat.png")
+        self.arrow_image = pygame.image.load('arrow.png')
+        #arrow one
+        self.arrow_x = self.x
+        self.arrow_y = self.y
 
     def movement(self, playerx):
         if self.x >= playerx + self.width*2:
@@ -104,7 +110,15 @@ class Boat:
             self.x += self.vel
 
     def attack(self):
-        pass
+        if self.arrow_x > 0 and self.arrow_y > 0:
+            self.arrow_x -= self.vel*2
+            self.arrow_y -= self.vel*2
+        else:
+            self.arrow_x = self.x
+            self.arrow_y = self.y
+            
+        self.win.blit(self.arrow_image, (self.arrow_x, self.arrow_y))
+        
 
     def draw(self):
-        pygame.draw.rect(self.win, GREEN, (self.x, self.y, self.width, self.height))
+        self.win.blit(self.boat_image, (self.x, self.y))
